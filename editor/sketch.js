@@ -1,114 +1,112 @@
-// RECEIPT!
-// This is the file to edit. p5.js reference: https://p5js.org/reference/
-import JsBarcode from "jsbarcode";
-
-export const receipt = {
-  height: 1080, // 240–2000 px. Width is fixed by the printer.
-  seed: 67,
-};
-
-// everything here is editable. play around or rm -rf and see what you come up with!
-export function drawReceipt(p) {
-  const { width: w, height: h } = p;
-  const margin = 24;
-
-  // Header
-  p.noStroke();
-  p.fill(0);
-    p.textFont("monospace");
-    p.textAlign(p.CENTER, p.TOP);
-    p.textStyle(p.BOLD);
-    p.textSize(28);
-    p.text("NIGHT SIGNALS", w / 2, 30);
-
-  dashedLine(p, margin, 94, w - margin, 94, 6, 5);
-
-  // A seeded field of tiny stars and radio noise.
-  for (let i = 0; i < 150; i += 1) {
-    const x = p.random(margin, w - margin);
-    const y = p.random(118, 350);
-    const size = p.random([1, 1, 1, 2, 2, 3]);
-    if (p.random() > 0.82) {
-      p.rect(x - 3, y, 7, 1);
-      p.rect(x, y - 3, 1, 7);
-    } else {
-      p.rect(x, y, size, size);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Signature Preview</title>
+  <style>
+    body {
+      margin: 0;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background-color: #1a1a1a;
+      font-family: monospace;
     }
-  }
-
-  // Layered mountain signals. p.noise() and p.random() are both seeded.
-  const ridgeTop = 300;
-  for (let layer = 0; layer < 5; layer += 1) {
-    p.fill(layer % 2 === 0 ? 0 : 255);
-    p.stroke(0);
-    p.strokeWeight(2);
-    p.beginShape();
-    p.vertex(margin, 500 + layer * 48);
-    for (let x = margin; x <= w - margin; x += 5) {
-      const wave = p.noise(x * 0.012, layer * 4.2) * 90;
-      const y = ridgeTop + layer * 50 - wave;
-      p.vertex(x, y);
+    canvas {
+      background: #ffffff;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      border-radius: 4px;
     }
-    p.vertex(w - margin, 500 + layer * 48);
-    p.endShape(p.CLOSE);
-  }
+  </style>
+</head>
+<body>
 
-  // The transmission: a winding route with little station markers.
-  p.noFill();
-  p.stroke(0);
-  p.strokeWeight(5);
-  p.beginShape();
-  const route = [];
-  for (let y = 585; y < 915; y += 34) {
-    const x = p.map(p.noise(y * 0.018, 20), 0, 1, 68, w - 68);
-    route.push({ x, y });
-    p.vertex(x, y);
-  }
-  p.endShape();
+  <canvas id="receiptCanvas" width="380" height="380"></canvas>
 
-  p.strokeWeight(2);
-  p.fill(255);
-  route.forEach(({ x, y }, index) => {
-    if (index % 2 === 0) {
-      p.square(x - 6, y - 6, 12);
-      p.line(index % 4 === 0 ? margin : w - margin, y, x, y);
+  <script>
+    const canvas = document.getElementById("receiptCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2 - 25;
+
+    // 1. White Background
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // 2. Signature Settings
+    ctx.strokeStyle = "#000000";
+    ctx.fillStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    // Horizontal Center Strike Line
+    ctx.beginPath();
+    ctx.moveTo(cx - 110, cy);
+    ctx.lineTo(cx + 115, cy);
+    ctx.stroke();
+
+    // Sharp Left Chevron (<)
+    ctx.beginPath();
+    ctx.moveTo(cx - 45, cy - 38);
+    ctx.lineTo(cx - 105, cy - 2);
+    ctx.lineTo(cx - 52, cy + 24);
+    ctx.stroke();
+
+    // Tall Vertical Stems
+    ctx.beginPath();
+    ctx.moveTo(cx - 55, cy + 32);
+    ctx.lineTo(cx - 48, cy - 42);
+    ctx.moveTo(cx - 30, cy + 30);
+    ctx.lineTo(cx - 28, cy - 40);
+    ctx.stroke();
+
+    // Monogram Curves
+    ctx.beginPath();
+    ctx.moveTo(cx - 52, cy - 30);
+    ctx.bezierCurveTo(cx - 38, cy - 46, cx - 24, cy - 35, cx - 32, cy - 15);
+    ctx.bezierCurveTo(cx - 58, cy - 5, cx - 40, cy + 20, cx - 20, cy + 10);
+    ctx.stroke();
+
+    // Cursive Loop
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(cx - 22, cy);
+    ctx.quadraticCurveTo(cx - 12, cy - 12, cx - 6, cy - 2);
+    ctx.quadraticCurveTo(cx + 4, cy - 12, cx + 10, cy - 2);
+    ctx.quadraticCurveTo(cx + 24, cy - 12, cx + 28, cy);
+    ctx.quadraticCurveTo(cx + 42, cy + 18, cx + 62, cy - 28);
+    ctx.stroke();
+
+    // Accents
+    ctx.beginPath();
+    ctx.arc(cx - 32, cy - 50, 1.5, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.beginPath();
+    ctx.moveTo(cx - 57, cy + 42);
+    ctx.lineTo(cx - 55, cy + 46);
+    ctx.stroke();
+
+    // 3. Barcode Graphic
+    const barY = canvas.height - 80;
+    let currentX = cx - 80;
+    const pattern = [2, 1, 3, 1, 1, 2, 4, 1, 2, 2, 1, 3, 1, 1, 4, 2, 1, 2, 3, 1, 1, 2, 1, 3];
+    
+    ctx.fillStyle = "#000000";
+    for (let i = 0; i < pattern.length; i++) {
+      if (i % 2 === 0) {
+        ctx.fillRect(currentX, barY, pattern[i] * 1.5, 36);
+      }
+      currentX += pattern[i] * 1.5;
     }
-  });
 
-  dashedLine(p, margin, 930, w - margin, 930, 6, 5);
-
-  const barcodeValue = "receipt.hackclub.com";
-  drawBarcode(p, barcodeValue, w / 2, 960);
-
-  p.noStroke();
-  p.fill(0);
-  p.textFont("monospace");
-  p.textAlign(p.CENTER, p.TOP);
-  p.textStyle(p.NORMAL);
-  p.textSize(10);
-  p.text(barcodeValue, w / 2, 1024);
-}
-
-function drawBarcode(p, value, centerX, y) {
-  const barcodeCanvas = document.createElement("canvas");
-  JsBarcode(barcodeCanvas, value, {
-    format: "CODE128",
-    width: 1,
-    height: 52,
-    displayValue: false,
-    margin: 0,
-    background: "#ffffff",
-    lineColor: "#000000",
-  });
-  // Draw directly on p5's canvas: p.image expects a p5 image wrapper, while
-  // JsBarcode returns a regular browser canvas.
-  p.drawingContext.drawImage(barcodeCanvas, Math.floor(centerX - barcodeCanvas.width / 2), y);
-}
-
-function dashedLine(p, x1, y1, x2, y2, dash, gap) {
-  p.stroke(0);
-  p.strokeWeight(2);
-  for (let x = x1; x < x2; x += dash + gap) {
-    p.line(x, y1, Math.min(x + dash, x2), y2);
-  }
-}
+    // Barcode Text Label
+    ctx.font = "10px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("SIGNATURE-2026", cx, canvas.height - 28);
+  </script>
+</body>
+</html>
